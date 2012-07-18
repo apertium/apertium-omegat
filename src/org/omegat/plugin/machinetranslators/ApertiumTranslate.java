@@ -8,6 +8,7 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -65,7 +66,13 @@ public class ApertiumTranslate extends BaseTranslate {
     }
     
 
-    protected static final Preferences prefs = Preferences.userNodeForPackage(Translator.class);
+    protected static final Preferences prefs = Preferences.userNodeForPackage(ApertiumTranslate.class);
+    protected static final FilenameFilter filter = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.endsWith(".jar");
+        }
+    };
 
     private HashMap<String, String> titleToBase;
     private HashMap<String, String> titleToMode;
@@ -77,15 +84,17 @@ public class ApertiumTranslate extends BaseTranslate {
         while (packagesDir == null || !packagesDir.isDirectory()) {
             String options[] = {"Create default directory", "Choose my own directory"};
             int answer = JOptionPane.showOptionDialog(null,
-                    "It seems that this is the first time that you run the program.\n"
+                    "Welcome to Apertium!\n"
+                    + "It seems that this is the first time that you run the this plug-in.\n"
                     + "First of all, we need to set the directory in which to install the\n"
                     + "language pair packages.\n"
                     + "You can either create the default directory (a folder called \n"
-                    + "\"Apertium packages\" in your home directory) or select a custom one.\n",
-                    "Welcome to Apertium!",
+                    + "\"Apertium OmegaT packages\" in your home directory) or select a\n"
+                    + "custom one.\n",
+                    "Apertium plug-in for OmegaT",
                     JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
             if (answer == 0) {
-                packagesDir = new File(new File(System.getProperty("user.home")), "Apertium packages");
+                packagesDir = new File(new File(System.getProperty("user.home")), "Apertium OmegaT packages");
                 packagesDir.mkdir();
                 prefs.put("packagesPath", packagesDir.getPath());
             } else if (answer == 1) {
@@ -107,12 +116,12 @@ public class ApertiumTranslate extends BaseTranslate {
                 JOptionPane.showConfirmDialog(null,
                 "You don't have any language pair installed yet.\n"
                 + "Would you like to install some now?",
-                "We need language pairs!", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+                "Apertium plug-in for OmegaT", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
             try {
                 new InstallDialog((Frame)null, true) {
                     @Override
                     protected void initStrings() {
-                        STR_TITLE = "Install language pairs";
+                        STR_TITLE = "Apertium plug-in for OmegaT";
                         STR_INSTRUCTIONS = "Check the language pairs to install.";
                     }
                 }.setVisible(true);

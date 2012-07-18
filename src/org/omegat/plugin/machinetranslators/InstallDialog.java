@@ -30,10 +30,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.event.TableModelEvent;
@@ -156,7 +158,7 @@ public class InstallDialog extends javax.swing.JDialog {
         updatablePackages = new ArrayList<String>();
         updatedPackages = new ArrayList<String>();
         packageToCode = new HashMap<String, String>();
-        ArrayList<String> installedPackagesCodes = new ArrayList<String>(Arrays.asList(new File(ApertiumTranslate.prefs.get("packagesPath", null)).list()));
+        ArrayList<String> installedPackagesCodes = new ArrayList<String>(Arrays.asList(new File(ApertiumTranslate.prefs.get("packagesPath", null)).list(ApertiumTranslate.filter)));
         
         BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(REPO_URL).openStream()));
         String line, pattern = "<li><a href=\"|.jar\">|</a></li>";
@@ -291,11 +293,12 @@ public class InstallDialog extends javax.swing.JDialog {
         final JLabel message = new JLabel("Preparing...");
         final JProgressBar progress = new JProgressBar(0, 100);
         progress.setStringPainted(true);
+        ((JPanel)dialog.getContentPane()).setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        dialog.setLayout(new BorderLayout(5, 5));
         dialog.add(BorderLayout.NORTH, message);
         dialog.add(BorderLayout.CENTER, progress);
         dialog.setSize(300, 100);
         dialog.setLocationRelativeTo(this);
-        this.dispose();
         
         new Thread() {
             @Override
@@ -347,6 +350,7 @@ public class InstallDialog extends javax.swing.JDialog {
             }
         }.start();
         dialog.setVisible(true);
+        this.dispose();
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
