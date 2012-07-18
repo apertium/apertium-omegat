@@ -82,7 +82,7 @@ public class ApertiumTranslate extends BaseTranslate {
                     + "language pair packages.\n"
                     + "You can either create the default directory (a folder called \n"
                     + "\"Apertium packages\" in your home directory) or select a custom one.\n",
-                    "Welcome to Apertium Caffeine!",
+                    "Welcome to Apertium!",
                     JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
             if (answer == 0) {
                 packagesDir = new File(new File(System.getProperty("user.home")), "Apertium packages");
