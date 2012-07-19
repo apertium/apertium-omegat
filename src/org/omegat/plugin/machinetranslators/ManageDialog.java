@@ -1,15 +1,24 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * ManageDialog.java
- *
- * Created on Jul 11, 2012, 12:03:47 PM
+ * Copyright (C) 2012 Mikel Artetxe
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
  */
 package org.omegat.plugin.machinetranslators;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -180,16 +189,27 @@ public class ManageDialog extends javax.swing.JDialog {
         fc.setApproveButtonText("OK");
         fc.setDialogTitle("Choose a directory");
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            String dir = fc.getSelectedFile().getPath();
-            if (!dir.equals(ApertiumTranslate.prefs.get("packagesPath", null)) &&
+            File dir = fc.getSelectedFile();
+            if (new File(dir, ".apertium-caffeine").exists())
+                JOptionPane.showMessageDialog(null,
+                    "The selected directory is being used by Apertium Caffeine.\n"
+                    + "Please, select a different one.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            else if (!dir.getPath().equals(ApertiumTranslate.prefs.get("packagesPath", null)) &&
                     JOptionPane.showConfirmDialog(rootPane,
                     "This will remove all the language pairs that you have installed.\n"
                     + "You can manually reinstall them by copying them to the new directory,\n"
                     + "or you can install them from the app as well.\n"
                     + "Continue?",
                     "Warning", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-                ApertiumTranslate.prefs.put("packagesPath", dir);
-                packagesTextField.setText(dir);
+                new File(ApertiumTranslate.prefs.get("packagesPath", null), ".apertium-omegat").delete();
+                ApertiumTranslate.prefs.put("packagesPath", dir.getPath());
+                packagesTextField.setText(dir.getPath());
+                try {
+                    new File(dir, ".apertium-omegat").createNewFile();
+                } catch (IOException ex) {
+                    Logger.getLogger(ApertiumTranslate.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }//GEN-LAST:event_editPackagesButtonActionPerformed

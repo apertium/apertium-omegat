@@ -1,6 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2012 Mikel Artetxe
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
  */
 package org.omegat.plugin.machinetranslators;
 
@@ -70,7 +84,7 @@ public class ApertiumTranslate extends BaseTranslate {
     protected static final FilenameFilter filter = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
-            return name.endsWith(".jar");
+            return name.matches("([a-z_]+-[a-z_]+(,[a-z_]+-[a-z_]+)*).jar|(apertium-[a-z_]+-[a-z_]+).jar");
         }
     };
 
@@ -97,6 +111,11 @@ public class ApertiumTranslate extends BaseTranslate {
                 packagesDir = new File(new File(System.getProperty("user.home")), "Apertium OmegaT packages");
                 packagesDir.mkdir();
                 prefs.put("packagesPath", packagesDir.getPath());
+                try {
+                    new File(packagesDir, ".apertium-omegat").createNewFile();
+                } catch (IOException ex) {
+                    Logger.getLogger(ApertiumTranslate.class.getName()).log(Level.SEVERE, null, ex);
+                }
             } else if (answer == 1) {
                 JFileChooser fc = new JFileChooser();
                 fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -104,11 +123,23 @@ public class ApertiumTranslate extends BaseTranslate {
                 fc.setDialogTitle("Choose a directory");
                 if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     packagesDir = fc.getSelectedFile();
+                    while (new File(packagesDir, ".apertium-caffeine").exists()) {
+                        JOptionPane.showMessageDialog(null,
+                                "The selected directory is being used by Apertium Caffeine.\n"
+                                + "Please, select a different one.",
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                        if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+                            packagesDir = fc.getSelectedFile();
+                        else System.exit(0);
+                    }
                     prefs.put("packagesPath", packagesDir.getPath());
-                }
-            } else {
-                System.exit(0);
-            }
+                    try {
+                        new File(packagesDir, ".apertium-omegat").createNewFile();
+                    } catch (IOException ex) {
+                        Logger.getLogger(ApertiumTranslate.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else System.exit(0);
+            } else System.exit(0);
         }
 
         initModes(packagesDir);
