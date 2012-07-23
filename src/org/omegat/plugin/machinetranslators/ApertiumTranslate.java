@@ -73,7 +73,7 @@ public class ApertiumTranslate extends BaseTranslate {
         if (base != null) {
             Translator.setBase(base);
             Translator.setMode(titleToMode.get(title));
-            return Translator.translate(text);
+            return Translator.translate(text, "omegat");
         }
         return "This language pair isn't installed.";
     }
