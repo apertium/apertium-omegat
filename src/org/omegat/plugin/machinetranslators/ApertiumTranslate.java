@@ -47,10 +47,9 @@ public class ApertiumTranslate extends BaseTranslate {
         item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ManageDialog(null, true).setVisible(true);
+                new SettingsDialog(null, true).setVisible(true);
                 initModes(new File(prefs.get("packagesPath", null)));
-                Translator.setDisplayMarks(prefs.getBoolean("OmegaT_displayMarks", true));
-                Translator.setDisplayAmbiguity(prefs.getBoolean("OmegaT_displayAmbiguity", false));
+                Translator.setDisplayMarks(prefs.getBoolean("displayMarks", true));
             }
         });
         Core.getMainWindow().getMainMenu().getOptionsMenu().add(item);
@@ -99,7 +98,7 @@ public class ApertiumTranslate extends BaseTranslate {
             String options[] = {"Create default directory", "Choose my own directory"};
             int answer = JOptionPane.showOptionDialog(null,
                     "Welcome to Apertium!\n"
-                    + "It seems that this is the first time that you run the this plug-in.\n"
+                    + "It seems that this is the first time that you run this plug-in.\n"
                     + "First of all, we need to set the directory in which to install the\n"
                     + "language pair packages.\n"
                     + "You can either create the default directory (a folder called \n"
@@ -162,8 +161,7 @@ public class ApertiumTranslate extends BaseTranslate {
                 JOptionPane.showMessageDialog(null, ex, "Error", JOptionPane.ERROR_MESSAGE);
             }
 
-        Translator.setDisplayMarks(prefs.getBoolean("OmegaT_displayMarks", true));
-        Translator.setDisplayAmbiguity(prefs.getBoolean("OmegaT_displayAmbiguity", false));
+        Translator.setDisplayMarks(prefs.getBoolean("displayMarks", true));
 
         Translator.setCacheEnabled(true);
 
