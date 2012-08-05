@@ -57,13 +57,14 @@ import org.apertium.Translator;
  */
 public class InstallDialog extends javax.swing.JDialog {
     
-    protected static final String REPO_URL = "https://apertium.svn.sourceforge.net/svnroot/apertium/branches/gsoc2012/artetxem/packages/jars/";
+    protected static final String REPO_URL = "https://apertium.svn.sourceforge.net/svnroot/apertium/builds/language-pairs";
     
     protected ArrayList<String> packages;
     protected ArrayList<String> installedPackages;
     protected ArrayList<String> updatablePackages;
     protected ArrayList<String> updatedPackages;
-    protected HashMap<String, String> packageToCode;
+    protected HashMap<String, String> packageToFilename;
+    protected HashMap<String, URL> packageToURL;
     protected Object tableContent[][];
     private boolean packagesToInstall[], packagesToUninstall[];
     
@@ -165,32 +166,35 @@ public class InstallDialog extends javax.swing.JDialog {
         installedPackages = new ArrayList<String>();
         updatablePackages = new ArrayList<String>();
         updatedPackages = new ArrayList<String>();
-        packageToCode = new HashMap<String, String>();
-        ArrayList<String> installedPackagesCodes = new ArrayList<String>(Arrays.asList(new File(ApertiumTranslate.prefs.get("packagesPath", null)).list(ApertiumTranslate.filter)));
+        packageToFilename = new HashMap<String, String>();
+        packageToURL = new HashMap<String, URL>();
+        ArrayList<String> installedPackagesFilenames = new ArrayList<String>(Arrays.asList(new File(ApertiumTranslate.prefs.get("packagesPath", null)).list(ApertiumTranslate.filter)));
         
         BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(REPO_URL).openStream()));
-        String line, pattern = "<li><a href=\"|.jar\">|</a></li>";
+        String line;
         while ((line = reader.readLine()) != null) {
-            String[] code = line.split(pattern);
-            if (code.length > 2) {
-                String p = Translator.getTitle(code[1]);
+            String[] columns = line.split("\t");
+            if (columns.length > 3) {
+                String p = Translator.getTitle(columns[3]);
                 packages.add(p);
-                packageToCode.put(p, code[1] + ".jar");
-                if (installedPackagesCodes.contains(code[1] + ".jar")) {
-                    installedPackagesCodes.remove(code[1] + ".jar");
+                URL url = new URL(columns[1]);
+                packageToURL.put(p, url);
+                packageToFilename.put(p, columns[0] + ".jar");
+                if (installedPackagesFilenames.contains(columns[0] + ".jar")) {
+                    installedPackagesFilenames.remove(columns[0] + ".jar");
                     installedPackages.add(p);
-                    long localLastModified = ApertiumTranslate.prefs.getLong("last_modified_" + code[1] + ".jar", -1);
-                    long onlineLastModified = new URL(REPO_URL + code[1] + ".jar").openConnection().getLastModified();
+                    long localLastModified = ApertiumTranslate.prefs.getLong("last_modified_" + columns[0] + ".jar", -1);
+                    long onlineLastModified = url.openConnection().getLastModified();
                     if (onlineLastModified > localLastModified) updatablePackages.add(p);
                     else updatedPackages.add(p);
                 }
             }
         }
         
-        for (String code : installedPackagesCodes) {
+        for (String code : installedPackagesFilenames) {
             packages.add(code);
             installedPackages.add(code);
-            packageToCode.put(code, code);
+            packageToFilename.put(code, code);
         }
         
         Collections.sort(packages);
@@ -315,7 +319,7 @@ public class InstallDialog extends javax.swing.JDialog {
                 for (int i = 0; i < packagesToInstall.length; i++)
                     if (packagesToInstall[i]) {
                         try {
-                            length += new URL(REPO_URL + packageToCode.get(tableContent[i][1])).openConnection().getContentLength();
+                            length += packageToURL.get(tableContent[i][1]).openConnection().getContentLength();
                         } catch (IOException ex) {
                             Logger.getLogger(InstallDialog.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -326,9 +330,8 @@ public class InstallDialog extends javax.swing.JDialog {
                     if (packagesToInstall[i]) {
                         try {
                             message.setText(STR_INSTALLING + " " + tableContent[i][1] + "...");
-                            URL url = new URL(REPO_URL + packageToCode.get(tableContent[i][1]));
-                            BufferedInputStream in = new BufferedInputStream(url.openStream());
-                            FileOutputStream fos = new FileOutputStream(new File(new File(ApertiumTranslate.prefs.get("packagesPath", "")), packageToCode.get(tableContent[i][1])));
+                            BufferedInputStream in = new BufferedInputStream(packageToURL.get(tableContent[i][1]).openStream());
+                            FileOutputStream fos = new FileOutputStream(new File(new File(ApertiumTranslate.prefs.get("packagesPath", "")), packageToFilename.get(tableContent[i][1])));
                             byte data[] = new byte[1024];
                             int count;
                             while((count = in.read(data, 0, 1024)) != -1) {
@@ -339,7 +342,7 @@ public class InstallDialog extends javax.swing.JDialog {
                             }
                             fos.close();
                             in.close();
-                            ApertiumTranslate.prefs.putLong("last_modified_" + packageToCode.get(tableContent[i][1]), url.openConnection().getLastModified());
+                            ApertiumTranslate.prefs.putLong("last_modified_" + packageToFilename.get(tableContent[i][1]), packageToURL.get(tableContent[i][1]).openConnection().getLastModified());
                         } catch (IOException ex) {
                             Logger.getLogger(InstallDialog.class.getName()).log(Level.SEVERE, null, ex);
                             JOptionPane.showMessageDialog(InstallDialog.this, ex, "Error", JOptionPane.ERROR_MESSAGE);
@@ -349,10 +352,10 @@ public class InstallDialog extends javax.swing.JDialog {
                 for (int i = 0; i < packagesToInstall.length; i++)
                     if (packagesToUninstall[i]) {
                         message.setText(STR_UNINSTALLING + " " + tableContent[i][1] + "...");
-                        if (!new File(new File(ApertiumTranslate.prefs.get("packagesPath", "")), packageToCode.get(tableContent[i][1])).delete()) {
+                        if (!new File(new File(ApertiumTranslate.prefs.get("packagesPath", "")), packageToFilename.get(tableContent[i][1])).delete()) {
                             JOptionPane.showMessageDialog(InstallDialog.this, "Unable to uninstall " + tableContent[i][1], "Error", JOptionPane.ERROR_MESSAGE);
                         }
-                        ApertiumTranslate.prefs.remove("last_modified_" + packageToCode.get(tableContent[i][1]));
+                        ApertiumTranslate.prefs.remove("last_modified_" + packageToFilename.get(tableContent[i][1]));
                     }
                 dialog.dispose();
             }
