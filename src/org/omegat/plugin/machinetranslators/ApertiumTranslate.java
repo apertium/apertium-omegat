@@ -71,9 +71,11 @@ public class ApertiumTranslate extends BaseTranslate {
         String title = sLang.getLocale().getDisplayLanguage() + " → " + tLang.getLocale().getDisplayLanguage();
         String base = titleToBase.get(title);
         if (base != null) {
-            Translator.setBase(base);
-            Translator.setMode(titleToMode.get(title));
-            return Translator.translate(text, "omegat");
+            synchronized (Translator.class) {
+                Translator.setBase(base);
+                Translator.setMode(titleToMode.get(title));
+                return Translator.translate(text, "omegat");
+            }
         }
         return "This language pair isn't installed.";
     }
