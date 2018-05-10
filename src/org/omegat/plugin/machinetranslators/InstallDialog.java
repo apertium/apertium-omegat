@@ -57,7 +57,7 @@ import org.apertium.Translator;
  */
 public class InstallDialog extends javax.swing.JDialog {
     
-    protected static final String REPO_URL = "https://apertium.svn.sourceforge.net/svnroot/apertium/builds/language-pairs";
+    protected static final String REPO_URL = "https://svn.code.sf.net/p/apertium/svn/builds/language-pairs";
     
     protected ArrayList<String> packages;
     protected ArrayList<String> installedPackages;
